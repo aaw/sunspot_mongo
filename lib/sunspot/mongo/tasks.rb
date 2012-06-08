@@ -13,8 +13,8 @@ namespace :sunspot do
       sunspot_models.each do |model|
         puts "reindexing #{model}"
         model.all.each(&:index)
-        Sunspot.commit
       end
+      Sunspot.commit
     end
   end
 end
