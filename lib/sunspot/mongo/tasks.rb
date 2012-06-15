@@ -1,7 +1,8 @@
 namespace :sunspot do
   namespace :mongo do
     desc "Reindex all models that include Sunspot::Mongo and are located in your application's models directory."
-    task :reindex, [:models] => :environment do |t, args|
+    task :reindex, [:models, :batch_size] => :environment do |t, args|
+      args[:batch_size] = 1000 unless args[:batch_size]
       sunspot_models = if args[:models]
          args[:models].split('+').map{|m| m.constantize}
       else
@@ -12,7 +13,13 @@ namespace :sunspot do
 
       sunspot_models.each do |model|
         puts "reindexing #{model}"
-        model.all.each(&:index)
+        (model.count / Float(args[:batch_size])).ceil.times do |i|
+          model.all.order_by([['_id', Mongo::ASCENDING]])
+                   .sort(skip(i * args[:batch_size])
+                   .limit(args[:batch_size]).each do |instance|
+            instance.index
+          end
+        end
       end
       Sunspot.commit
     end
