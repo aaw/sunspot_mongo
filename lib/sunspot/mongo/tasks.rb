@@ -15,7 +15,7 @@ namespace :sunspot do
         puts "reindexing #{model}"
         (model.count / Float(args[:batch_size])).ceil.times do |i|
           model.all.order_by([['_id', Mongo::ASCENDING]])
-                   .sort(skip(i * args[:batch_size])
+                   .skip(i * args[:batch_size])
                    .limit(args[:batch_size]).each do |instance|
             instance.index
           end
