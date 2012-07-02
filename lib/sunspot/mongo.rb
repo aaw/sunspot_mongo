@@ -19,11 +19,11 @@ module Sunspot
 
     class DataAccessor < Sunspot::Adapters::DataAccessor
       def load(id)
-        @clazz.find(id)
+        @clazz.where(_id: id).first
       end
 
       def load_all(ids)
-        @clazz.find(ids)
+        @clazz.any_in(_id: ids).to_a
       end
     end
   end
