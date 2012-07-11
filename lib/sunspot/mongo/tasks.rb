@@ -1,5 +1,16 @@
 namespace :sunspot do
   namespace :mongo do
+
+    # Inspired by the private Rails::Mongoid#determine_model method
+    def determine_mongoid_model(path)
+      parts = /app\/models\/(.*).rb$/.match(path).captures.first.split('/').map{ |x| x.camelize }
+      begin
+        return parts.join("::").constantize
+      rescue NameError, LoadError
+        return parts.last.constantize
+      end
+    end
+
     desc "Reindex all models that include Sunspot::Mongo and are located in your application's models directory."
     task :reindex, [:models, :batch_size] => :environment do |t, args|
       batch_size = args[:batch_size] || 1000
@@ -7,7 +18,7 @@ namespace :sunspot do
          args[:models].split('+').map{|m| m.constantize}
       else
         all_files = Dir.glob(Rails.root.join('app', 'models', '**', '*.rb'))
-        all_models = all_files.map { |path| File.basename(path, '.rb').camelize.constantize }
+        all_models = all_files.map { |path| determine_mongoid_model(path) }
         all_models.select { |m| m.include?(Sunspot::Mongo) and m.searchable? }
       end
 
