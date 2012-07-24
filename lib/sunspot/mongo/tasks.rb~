@@ -23,10 +23,16 @@ namespace :sunspot do
       end
 
       sunspot_models.each do |model|
-        puts "Reindexing #{model}"
-        model.batched_solr_index
+        puts "reindexing #{model}"
+        (model.count / Float(batch_size)).ceil.times do |i|
+          model.all.order_by([['_id', Mongo::ASCENDING]])
+                   .skip(i * batch_size)
+                   .limit(batch_size).each do |instance|
+            instance.index
+          end
+        end
       end
-
+      Sunspot.commit
     end
   end
 end
