@@ -15,7 +15,7 @@ module Sunspot
     module ClassMethods
       def batched_solr_index(batch_size = 1000)
         (count / Float(batch_size)).ceil.times do |i|
-          all.order_by([['_id', Mongo::ASCENDING]])
+          all.order_by([['_id', ::Mongo::ASCENDING]])
              .skip(i * batch_size)
              .limit(batch_size).each do |instance|
             instance.index
